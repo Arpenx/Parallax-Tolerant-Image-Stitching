@@ -30,5 +30,11 @@ draw_params = dict(matchColor = (0,255,0),
                    singlePointColor = (255,0,0),
                    matchesMask = matchesMask,
                    flags = 0)
-img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,matches,None,**draw_params)
-plt.imshow(img3,),plt.show()
+edges1 = cv2.Canny(img1,100,200)
+plt.imshow(edges1,cmap = 'gray'), plt.show()
+
+edges2 = cv2.Canny(img2,100,200)
+plt.imshow(edges2,cmap = 'gray'), plt.show()
+
+#img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,matches,None,**draw_params)
+#plt.imshow(img3,),plt.show()
