@@ -3,7 +3,7 @@ import cv2
 from matplotlib import pyplot as plt
 import random
 from cvxopt import matrix, solvers
-from cvxopt.modeling import variable , op
+from cvxopt.modeling import variable , op, dot
 
 def MATMUL(A, B):
     rows_A = len(A)
@@ -18,7 +18,7 @@ def MATMUL(A, B):
     # Create the result matrix
     # Dimensions would be rows_A x cols_B
     C = [[0 for row in range(cols_B)] for col in range(rows_A)]
-    print C
+    #print C
 
     for i in range(rows_A):
         for j in range(cols_B):
@@ -104,17 +104,26 @@ if len(good)>MIN_MATCH_COUNT:
         b = variable()
         c = variable()
         d = variable()
+        print pts_src
+        print pts_prime
         
         pts_prime1 = [[],[]]
         pts_prime1[0] = pts_prime[0]/pts_prime[2]
         pts_prime1[1] = pts_prime[1]/pts_prime[2]
-        pts_prime = np.array(pts_prime1)
-        pts_prime = pts_prime.transpose()
-        print pts_prime[1][0], pts_prime
-        #pts_arg1 = c + d - pts_prime[0][0][0] - pts_prime[0][0][1] - b*(w-1) + c + a*(w-1) + d - pts_prime[1][0][0] - pts_prime[1][0][1] + a*(h-1) + c + b*(h-1) + d - pts_prime[2][0][0] - pts_prime[2][0][1] + a*(h-1) - b*(w-1) + c + b*(h-1) + a*(w-1) + d - pts_prime[3][0][0] - pts_prime[3][0][1]
-        #lp = solvers.lp(pts_arg1)
+        pts_prime1 = np.array(pts_prime1)
+        pts_prime1 = pts_prime1.transpose()
+        pts_arg1 = MATMUL(H,pts_src)
+        """print pts_prime[1][0], pts_prime
+        pts_arg1 = c + d - pts_prime[0][0][0] 
+        			- pts_prime[0][0][1] - b*(w-1)
+        			+ c + a*(w-1) + d - pts_prime[1][0][0]
+        			- pts_prime[1][0][1] + a*(h-1) + c + b*(h-1)
+        			+ d - pts_prime[2][0][0] - pts_prime[2][0][1]
+        			+ a*(h-1) - b*(w-1) + c + b*(h-1) + a*(w-1)
+        			+ d - pts_prime[3][0][0] - pts_prime[3][0][1]"""
+        #lp = solvers.lp(pts_arg1-pts_prime)
         #lp.solve()
-        print a.value
+        #print a.value
         quality = 2
 
     M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
