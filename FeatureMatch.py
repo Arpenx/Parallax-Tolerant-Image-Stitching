@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 import random
 from cvxopt import matrix, solvers
 from cvxopt.modeling import variable , op, dot
+from scipy.optimize import leastsq
 
 def MATMUL(A, B):
     rows_A = len(A)
@@ -28,6 +29,19 @@ def MATMUL(A, B):
     C = np.matrix(C).reshape(len(A),len(B[0]))
 
     return C
+
+
+def func1(param, coordinates):
+    addition = param[0]*coordinates[0]-param[1]*coordinates[1]+param[2]
+    return addition
+
+def func2(param, coordinates):
+    addition = param[1]*coordinates[0]+param[0]*coordinates[1]+param[3]    
+    return addition
+
+def func(param,coordinates,coordinates1):
+    addition = np.sqrt((func1(param,coordinates)-coordinates1[0])**2+(func2(param,coordinates)-coordinates1[1])**2)
+    return addition
 
 i=1
 MIN_MATCH_COUNT = 10
@@ -105,15 +119,20 @@ if len(good)>MIN_MATCH_COUNT:
         c = variable()
         d = variable()
         print pts_src
-        print pts_prime
-        
+        print pts_prime      
         pts_prime1 = [[],[]]
         pts_prime1[0] = pts_prime[0]/pts_prime[2]
         pts_prime1[1] = pts_prime[1]/pts_prime[2]
         pts_prime1 = np.array(pts_prime1)
-        pts_prime1 = pts_prime1.transpose()
-        pts_arg1 = MATMUL(H,pts_src)
-        """print pts_prime[1][0], pts_prime
+        #pts_prime1 = pts_prime1.transpose()
+        print pts_prime1
+        x = np.array([[0,0,h-1,h-1],[0,w-1,0,w-1]])
+        y = np.array(pts_prime1.reshape(2,4))
+        param_init = [1,2,3,4]
+        params, success = leastsq(func,param_init,args=(x,y))
+        print params
+        
+        """pts_arg1 = MATMUL(H,pts_src)
         pts_arg1 = c + d - pts_prime[0][0][0] 
         			- pts_prime[0][0][1] - b*(w-1)
         			+ c + a*(w-1) + d - pts_prime[1][0][0]
