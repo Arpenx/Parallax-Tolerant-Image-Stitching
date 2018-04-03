@@ -93,6 +93,7 @@ if len(good)>MIN_MATCH_COUNT:
 			has_been_selected[seed_index] = 1
 			fl=1
 			penalty_score = penalty_score + 1
+
     dist_list = []
     for i in range(size):
         diff_x = src_pts[i][0][0]-src_pts[seed_index][0][0]
@@ -100,69 +101,36 @@ if len(good)>MIN_MATCH_COUNT:
         dist = diff_x*diff_x + diff_y*diff_y
         dist_list.append([i,dist])
     dist_list.sort(key=lambda x: x[1])
-    for i in range(9):
+    for i in range(5):
     	feature_points_src.append(src_pts[dist_list[i][0]])
     	feature_points_dst.append(dst_pts[dist_list[i][0]])
     i+=1
     while quality<=0.01:
         feature_points_src.append(src_pts[dist_list[i][0]])
         feature_points_dst.append(dst_pts[dist_list[i][0]])
-        feature_points_src = np.float32(feature_points_src)
-        feature_points_dst = np.float32(feature_points_dst)
-        H, mask = cv2.findHomography(feature_points_src, feature_points_dst, cv2.RANSAC,5.0)
+        feature_points_src1 = np.float32(feature_points_src)
+        feature_points_dst1 = np.float32(feature_points_dst)
+        H, mask = cv2.findHomography(feature_points_src1, feature_points_dst1, cv2.RANSAC,5.0)
         i+=1
         h,w = np.shape(img1)
         pts_src = np.array([[0,0,h-1,h-1], [0, w-1,0,w-1], [1,1,1,1]])
         pts_prime = MATMUL(H,pts_src)
-        # print pts_src
-        # print pts_prime      
+
         pts_prime1 = [[],[]]
         pts_prime1[0] = pts_prime[0]/pts_prime[2]
         pts_prime1[1] = pts_prime[1]/pts_prime[2]
         pts_prime1 = np.array(pts_prime1)
-        # print pts_prime1
+        
         x = np.array([[0,0,h-1,h-1],[0,w-1,0,w-1]])
         y = np.array(pts_prime1.reshape(2,4))
         param_init = [1,2,3,4]
         params, success = leastsq(func,param_init,args=(x,y))
-        # print params
         
-        quality = 2
-
-    # M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
-
-    # matchesMask = mask.ravel().tolist()
-
-    # h,w = img1.shape
-    
-    # pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
-    # dst = cv2.perspectiveTransform(pts,M)
-
-    # img2 = cv2.polylines(img2,[np.int32(dst)],True,255,3, cv2.LINE_AA)
-
+        H_ = np.array([[params[0],-params[1],params[2]], [params[1],params[0],params[3]], [0,0,1]])
+        pts_ = MATMUL(H_,pts_src)
+        Hy=pts_[:2,:]
+        quality = (np.sum(np.sqrt(np.sum(np.square(y-Hy),axis=0))))/(h*w)
+        print i,quality
 else:
     print "Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT)
     matchesMask = None
-
-# draw_params = dict(matchColor = (0,255,0), # draw matches in green color
-#                    singlePointColor = None,
-#                    matchesMask = matchesMask, # draw only inliers
-#                    flags = 2)
-
-# img3 = cv2.drawMatches(img1,kp1,img2,kp2,good,None,**draw_params)
-
-
-# plt.imshow(img3, 'gray'),plt.show()
-
-# draw_params = dict(matchColor = (0,255,0),
-#                    singlePointColor = (255,0,0),
-#                    matchesMask = matchesMask,
-#                    flags = 0)
-# edges1 = cv2.Canny(img1,100,200)
-# plt.imshow(edges1,cmap = 'gray'), plt.show()
-
-# edges2 = cv2.Canny(img2,100,200)
-# plt.imshow(edges2,cmap = 'gray'), plt.show()
-
-#img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,matches,None,**draw_params)
-#plt.imshow(img3,),plt.show()
